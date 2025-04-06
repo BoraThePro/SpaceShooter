@@ -1,0 +1,12 @@
+# Eclipse project files
+.classpath
+.project
+.settings/
+bin/
+
+# Mac system files
+.DS_Store
+
+# Logs or temp files
+*.log
+
