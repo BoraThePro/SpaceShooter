@@ -22,6 +22,13 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
     private int spawnTimer = 0;
     private final int spawnDelay = 60; 
     private boolean gameOver = false;
+    private int score = 0;
+    private int scoreTimer = 0;
+    private final int scoreTickRate = 60;
+    private final List<PowerUp> powerUps = new ArrayList<>();
+    private int powerUpSpawnTimer = 0;
+    private final int powerUpSpawnDelay = 300; // ~5 seconds
+
 
 
     private Thread gameThread;
@@ -83,6 +90,12 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
                 iterator.remove(); // clean up off-screen asteroid
             }
         }
+        
+        scoreTimer++;
+        if (scoreTimer >= scoreTickRate) {
+            score++;
+            scoreTimer = 0;
+        }
     }
     
     private void drawSpaceship(Graphics g) {
@@ -100,25 +113,39 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         g.setColor(new Color(0, 0, 0, 150));
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Main "Game Over" text
+        // "GAME OVER" text
         g.setColor(Color.RED);
         g.setFont(g.getFont().deriveFont(36f));
-        String text = "GAME OVER";
-        FontMetrics metrics = g.getFontMetrics();
-        int x = (getWidth() - metrics.stringWidth(text)) / 2;
-        int y = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
-        g.drawString(text, x, y);
+        String gameOverText = "GAME OVER";
+        FontMetrics fm = g.getFontMetrics();
+        int gameOverX = (getWidth() - fm.stringWidth(gameOverText)) / 2;
+        int gameOverY = (getHeight() / 2) - 40;
+        g.drawString(gameOverText, gameOverX, gameOverY);
 
-        // Smaller restart text
+        // Final score text
+        String scoreText = "Final Score: " + score;
+        g.setFont(g.getFont().deriveFont(28f));
+        FontMetrics scoreMetrics = g.getFontMetrics();
+        int scoreX = (getWidth() - scoreMetrics.stringWidth(scoreText)) / 2;
+        int scoreY = gameOverY + 40;
+        g.drawString(scoreText, scoreX, scoreY);
+
+        // Restart prompt
+        String restartText = "Press 'R' to Restart";
         g.setColor(Color.WHITE);
         g.setFont(g.getFont().deriveFont(18f));
-        String restartText = "Press 'R' to Restart";
         FontMetrics restartMetrics = g.getFontMetrics();
         int restartX = (getWidth() - restartMetrics.stringWidth(restartText)) / 2;
-        int restartY = y + 40; // slightly below "GAME OVER"
+        int restartY = scoreY + 30;
         g.drawString(restartText, restartX, restartY);
     }
 
+    
+    private void drawScore(Graphics g) {
+        g.setColor(Color.WHITE);
+        g.setFont(g.getFont().deriveFont(18f));
+        g.drawString("Score: " + score, 10, 20);
+    }
     
     @Override
     protected void paintComponent(Graphics g) {
@@ -126,6 +153,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
 
         drawSpaceship(g);
         drawAsteroids(g);
+        drawScore(g);
 
         if (gameOver) {
             drawGameOverScreen(g);
@@ -151,7 +179,15 @@ public class GamePanel extends JPanel implements Runnable, KeyListener {
         }
     }
     
+    public void addScore(int points) {
+        this.score += points;
+    }
+
+    
     private void restartGame() {
+    	score = 0;
+    	scoreTimer = 0;
+
         // Reset spaceship
         spaceship = new Spaceship(380, 550);
 
